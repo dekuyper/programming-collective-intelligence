@@ -46,6 +46,19 @@ critics = {
         'Superman Returns': 5.0,
         'You, Me and Dupree': 3.5,
     },
-    'Toby': {'Snakes on a Plane': 4.5, 'You, Me and Dupree': 1.0,
-             'Superman Returns': 4.0},
+    'Toby': {
+        'Snakes on a Plane': 4.5,
+        'You, Me and Dupree': 1.0,
+        'Superman Returns': 4.0
+    },
 }
+
+def sim_distance(prefs, person1, person2):
+    shared_items = {}
+    for item in prefs[person1]:
+        if item in prefs[person2]:
+            shared_items[item]=1
+
+    if len(shared_items)==0: return 0
+    sum_of_squares = sum([pow(prefs[person1][item]-prefs[person2][item], 2) for item in shared_items])
+    return 1/(1+sqrt(sum_of_squares))
