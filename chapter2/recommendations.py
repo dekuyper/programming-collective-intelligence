@@ -51,10 +51,14 @@ critics = {
         'You, Me and Dupree': 1.0,
         'Superman Returns': 4.0
     },
+    'Nicu': {
+        'Superman Returns': 4.0,
+        'You, Me and Dupree': 3.5
+    }
 }
 
 
-def sim_distance(prefs, person1, person2):
+def simDistance(prefs, person1, person2):
     shared_items = {}
     for item in prefs[person1]:
         if item in prefs[person2]:
@@ -67,7 +71,7 @@ def sim_distance(prefs, person1, person2):
     return 1 / (1 + sqrt(sum_of_squares))
 
 
-def sim_pearson(prefs, person1, person2):
+def simPearson(prefs, person1, person2):
     # Get the list of mutually rated items
     shared_items = {}
     for item in prefs[person1]:
@@ -103,3 +107,52 @@ def sim_pearson(prefs, person1, person2):
     result = num / den
 
     return result
+
+
+def topMatches(prefs, person, n=5, similarity=simPearson):
+    """
+    Returns the best matches for person from the prefs dictionary
+    Number of results and similarity function are optional parameters
+    """
+    scores = [(similarity(prefs, person, other), other)
+              for other in prefs if other != person]
+
+    # Sort the list so the highest scores appear at the top
+    scores.sort()
+    scores.reverse()
+    return scores[0:n]
+
+
+def getRecommendations(prefs, person, similarity=simPearson):
+    totals = {}
+    simSums = {}
+    for other in prefs:
+        # don't compare me to myself
+        if other == person:
+            continue
+
+        sim = similarity(prefs, person, other)
+
+        # ignore scores of 0 or lower
+        if sim <= 0:
+            continue
+
+        for item in prefs[other]:
+            # only scores movies I haven't seen yet
+            if item not in prefs[person] or prefs[person][item] == 0:
+                # Similarity * Score
+                totals.setdefault(item, 0)
+                totals[item] += prefs[other][item] * sim
+                # Sum of similarities
+                simSums.setdefault(item, 0)
+                simSums[item] += sim
+
+        # Create the normalized list
+        rankings = [(total / simSums[item], item)
+                    for item, total in totals.items()]
+
+        # Return the sorted list
+        rankings.sort()
+        rankings.reverse()
+
+        return rankings
