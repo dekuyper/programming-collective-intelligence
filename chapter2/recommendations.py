@@ -53,12 +53,53 @@ critics = {
     },
 }
 
+
 def sim_distance(prefs, person1, person2):
     shared_items = {}
     for item in prefs[person1]:
         if item in prefs[person2]:
-            shared_items[item]=1
+            shared_items[item] = 1
 
-    if len(shared_items)==0: return 0
-    sum_of_squares = sum([pow(prefs[person1][item]-prefs[person2][item], 2) for item in shared_items])
-    return 1/(1+sqrt(sum_of_squares))
+    if len(shared_items) == 0:
+        return 0
+    sum_of_squares = sum(
+        [pow(prefs[person1][item] - prefs[person2][item], 2) for item in shared_items])
+    return 1 / (1 + sqrt(sum_of_squares))
+
+
+def sim_pearson(prefs, person1, person2):
+    # Get the list of mutually rated items
+    shared_items = {}
+    for item in prefs[person1]:
+        if item in prefs[person2]:
+            shared_items[item] = 1
+
+    # Find the number of elements
+    n = len(shared_items)
+
+    if n == 0:
+        return 0
+
+    # Add up all the preferences
+    sum1 = sum([prefs[person1][item] for item in shared_items])
+    sum2 = sum([prefs[person2][item] for item in shared_items])
+
+    # Sum up the squares
+    sum1Sq = sum([pow(prefs[person1][item], 2) for item in shared_items])
+    sum2Sq = sum([pow(prefs[person2][item], 2) for item in shared_items])
+
+    # Sum up the products
+    pSum = sum([prefs[person1][item] * prefs[person2][item]
+                for item in shared_items])
+
+    # Calculate Pearson score
+    num = pSum - (sum1 * sum2 / n)
+    den = sqrt((sum1Sq - pow(sum1, 2) / n) * (sum2Sq - pow(sum2, 2) / n))
+
+    # Protection against division by 0 errors
+    if den == 0:
+        return 0
+
+    result = num / den
+
+    return result
